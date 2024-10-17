@@ -28,30 +28,31 @@ from fastapi.security.api_key import APIKeyHeader
 from fastapi import FastAPI, Request, HTTPException, Depends, Security
 import smtplib
 from security import Secure
+from pydantic import BaseModel
 
 
 class AD_Handle(Secure):
 
     def __init__(self,USER: str,PASSWD: str):
-        self.LDAP_HOST = "10.128.10.131"
-        self.LDAP_USER = 'luongnv'
-        self.LDAP_PASSWD = 'admin@123'
+        self.__LDAP_HOST = "10.128.10.131"
+        self.__LDAP_USER = 'luongnv'
+        self.__LDAP_PASSWD = 'admin@123'
         self.OU = "OU=Mail,"
-        self.LDAP_BASE_DN = "DC=staging,DC=fpt,DC=net"
+        self.__LDAP_BASE_DN = "DC=staging,DC=fpt,DC=net"
         self.OBJECT_CLASS = ['person', 'organizationalPerson', 'user']
-        self._USER = USER
-        self._PASSWD = PASSWD
+        self.__USER = USER
+        self.__PASSWD = PASSWD
         
     def ldap_server(self):
-        return ldap3.Server(self.LDAP_HOST)
+        return ldap3.Server(self.__LDAP_HOST)
 
     def ldap_login(self):
         try:
             # Thực hiện kết nối đến LDAP server
             conn = ldap3.Connection(
                 self.ldap_server(),
-                user=self._USER,
-                password=self._PASSWD,
+                user=self.__USER,
+                password=self.__PASSWD,
                 auto_bind=True  # Kết nối và xác thực tự động
             )
             print("Kết nối LDAP thành công.")
@@ -72,8 +73,8 @@ class AD_Handle(Secure):
             # Thực hiện kết nối đến LDAP server
             conn = ldap3.Connection(
                 self.ldap_server(),
-                user=self.LDAP_USER,
-                password=self.LDAP_PASSWD,
+                user=self.__LDAP_USER,
+                password=self.__LDAP_PASSWD,
                 auto_bind=True  # Kết nối và xác thực tự động
             )
             return conn
@@ -113,7 +114,7 @@ class AD_Handle(Secure):
 
     async def find_ad_users(self, conn, user_dn: str):
         conn.search(
-            search_base = self.LDAP_BASE_DN,
+            search_base = self.__LDAP_BASE_DN,
             search_filter = f"(userPrincipalName={user_dn})",
             search_scope = ldap3.SUBTREE,
             attributes = ldap3.ALL_ATTRIBUTES,
@@ -134,7 +135,7 @@ class AD_Handle(Secure):
     
     def chk_PrincipalName(self, conn, user_dn: str):
         conn.search(
-            search_base = self.LDAP_BASE_DN,
+            search_base = self.__LDAP_BASE_DN,
             search_filter = f"(userPrincipalName={user_dn})",
             search_scope = ldap3.SUBTREE,
             attributes = ldap3.ALL_ATTRIBUTES,
@@ -160,12 +161,12 @@ class AD_Handle(Secure):
     def create_usr(self,conn, user, ou: str):
         usr, num, dn = self.natural_key(user.user_dn)    # user  1  domain
         name = user.ho.title() + ' ' + user.ten.title()
-        distName = f'CN={user.cmnd},{ou + self.LDAP_BASE_DN}'
+        distName = f'CN={user.cmnd},{ou + self.__LDAP_BASE_DN}'
         
-        attributes = self.getAttribute(name, usr,num, dn, user.department)
-        print(attributes)  # check attribute (cmt khi dùng xong)
         
         while self.chk_PrincipalName(conn, user.user_dn):
+            attributes = self.getAttribute(name, usr,num, dn, user.department)
+            print(attributes)  # check attribute (cmt khi dùng xong)
             result = conn.add(dn= distName,
                         object_class=self.OBJECT_CLASS,
                         attributes=attributes)

@@ -32,7 +32,6 @@ from send_mail import SendMail
 
 class Secure(SendMail):    
     
-    
     def rand_token_passwd(self,length=6):
         if length <= 10:
             characters = string.ascii_letters + string.digits
