@@ -47,44 +47,38 @@ class AD_Handle(Secure):
 
     def ldap_login(self):
         try:
-            # Thực hiện kết nối đến LDAP server
             conn = ldap3.Connection(
                 self.ldap_server(),
                 user=self._USER,
                 password=self._PASSWD,
-                auto_bind=True  # Kết nối và xác thực tự động
+                auto_bind=True 
             )
             print("Kết nối LDAP thành công.")
-            return conn  # Trả về đối tượng kết nối nếu thành công
+            return conn 
 
         except ldap3.core.exceptions.LDAPBindError:
-            # Xử lý lỗi nếu xác thực không thành công
             print("Lỗi: Thông tin tài khoản người dùng không hợp lệ.")
-            return None  # Trả về None hoặc một giá trị báo lỗi
+            return None 
 
         except Exception as e:
-            # Xử lý tất cả các lỗi khác
             print(f"Lỗi khi kết nối tới LDAP: {e}")
             return None
 
     def ldap_connection(self):
         try:
-            # Thực hiện kết nối đến LDAP server
             conn = ldap3.Connection(
                 self.ldap_server(),
                 user=self.LDAP_USER,
                 password=self.LDAP_PASSWD,
-                auto_bind=True  # Kết nối và xác thực tự động
+                auto_bind=True 
             )
             return conn
 
         except ldap3.core.exceptions.LDAPBindError:
-            # Xử lý lỗi nếu xác thực không thành công
             print("Lỗi: Thông tin tài khoản quản trị viên không hợp lệ.")
-            return None  # Trả về None hoặc một giá trị báo lỗi
+            return None 
 
         except Exception as e:
-            # Xử lý tất cả các lỗi khác
             print(f"Lỗi khi kết nối tới LDAP: {e}")
             return None
         
@@ -124,10 +118,8 @@ class AD_Handle(Secure):
     def natural_key(self,s: str):
         username = s.split('@')[0]
         dn = s.split('@')[1]
-        # Sử dụng biểu thức chính quy để tách phần chữ và số ở cuối chuỗi
         match = re.match(r'([a-zA-Z]+)(\d+)$', username)
         if match:
-            # Trả về mảng chứa phần chữ và phần số
             return match.group(1), int(match.group(2)), dn
         else:
             return username, 0, dn
@@ -163,7 +155,7 @@ class AD_Handle(Secure):
         distName = f'CN={user.cmnd},{ou + self.LDAP_BASE_DN}'
         
         attributes = self.getAttribute(name, usr,num, dn, user.department)
-        print(attributes)  # check attribute (cmt khi dùng xong)
+        print(attributes)  # check attribute (del khi dùng xong)
         
         while self.chk_PrincipalName(conn, user.user_dn):
             result = conn.add(dn= distName,
